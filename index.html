@@ -1,84 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Secure Payment Form</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://js.stripe.com/v3/"></script>
-<style>
-/* ----------------------- Form Styles ----------------------- */
-* {box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;}
-body {background: #f8f9fa; color: #212529; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; line-height: 1.6;}
-.container {width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;}
-.header {background: #2c3e50; color: white; padding: 24px 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;}
-.header-content h1 {font-size: 24px; font-weight: 600; margin-bottom: 4px;}
-.header-content p {opacity: 0.9; font-size: 14px;}
-.payment-body {padding: 32px;}
-.section-title {font-size: 18px; color: #2c3e50; margin: 28px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e9ecef; display: flex; align-items: center; font-weight: 600;}
-.section-title i {margin-right: 12px;}
-.donation-amounts {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;}
-.donation-amounts .donation-option {flex: 1 1 30%; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.3s ease; font-weight: 500;}
-.donation-amounts .donation-option.active {background: #2c3e50; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
-.other-amount-container {display: none; margin-top: 16px;}
-.other-amount-container.visible {display: block;}
-.currency-symbol {position: relative;}
-.currency-symbol::before {content: "€"; position: absolute; left: 16px; top: 16px; color: #495057; font-weight: 500; z-index: 1;}
-.currency-symbol input {padding-left: 38px;}
-.form-group {margin-bottom: 24px;}
-label {display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: #495057;}
-input, select {width: 100%; padding: 16px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; transition: all 0.2s ease; color: #212529; background: white;}
-input:focus, select:focus {outline: none; border-color: #2c3e50; box-shadow: 0 0 0 3px rgba(44,62,80,0.1);}
-.form-row {display: flex; gap: 20px; margin-bottom: 20px;}
-.form-row .form-group {flex: 1; margin-bottom: 0;}
-.card-element-container {padding: 16px; border: 1px solid #ced4da; border-radius: 8px; background: white;}
-.StripeElement--focus {box-shadow: 0 0 0 3px rgba(44,62,80,0.1); border-color: #2c3e50;}
-.pay-button {background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 18px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; transition: all 0.3s ease; margin-top: 10px;}
-.pay-button:hover {background: #1a252f;}
-.pay-button:disabled {opacity: 0.7; cursor: not-allowed;}
-.secure-notice {display: flex; align-items: center; justify-content: center; margin-top: 24px; color: #6c757d; font-size: 14px;}
-.secure-notice i {margin-right: 8px; color: #28a745;}
-.accepted-cards {margin-top: 28px; text-align: center;}
-.accepted-cards p {font-size: 14px; color: #6c757d; margin-bottom: 12px;}
-.card-icons {display: flex; justify-content: center; gap: 12px;}
-.card-icons i {font-size: 32px; color: #495057;}
-.payment-footer {background: #f8f9fa; padding: 20px 32px; text-align: center; border-top: 1px solid #e9ecef;}
-.payment-footer p {font-size: 14px; color: #6c757d;}
-#donation-by {font-style: italic;}
-#donation-by::placeholder {font-style: italic; color: #6c757d;}
-.card-errors {color: #dc3545; margin-top: 8px; font-size: 14px;}
-
-/* ----------------------- Floral Success Modal Styles ----------------------- */
-.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:1000; opacity:0; visibility:hidden; transition:all 0.3s ease; }
-.modal-overlay.active { opacity:1; visibility:visible; }
-.success-modal { background:white; border-radius:20px; width:90%; max-width:500px; padding:30px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.3); position:relative; z-index:1002;}
-.success-modal h2 { animation: floatHeading 3s ease-in-out infinite; }
-@keyframes floatHeading { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
-.success-modal p { animation: floatText 3s ease-in-out infinite; }
-@keyframes floatText { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);} }
-.modal-button { background: linear-gradient(to right,#4CAF50,#2E8B57); color:white; border:none; border-radius:8px; padding:12px 24px; font-size:16px; font-weight:600; cursor:pointer; animation: pulseButton 2s ease-in-out infinite alternate;}
-@keyframes pulseButton { 0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);} }
-.success-icon { width:120px; height:120px; background: radial-gradient(circle at 30% 30%, #4CAF50, #2E8B57); border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 20px; position: relative; z-index:1002; box-shadow: 0 0 20px rgba(76,175,80,0.6), 0 0 40px rgba(76,175,80,0.3) inset; animation: iconBounce 2s ease-in-out infinite alternate, iconFloat 3s ease-in-out infinite;}
-.success-icon i { font-size:50px; color:white; z-index:1; }
-.success-icon::before { content: ''; position: absolute; width: 150px; height: 150px; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(76,175,80,0.3), transparent 60%); z-index: -1; animation: haloPulse 2s ease-in-out infinite alternate;}
-.success-icon::after { content: ''; position: absolute; width: 140px; height: 140px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(0deg); z-index: -1; animation: rotateRing 4s linear infinite; }
-@keyframes haloPulse {0% { transform: translate(-50%, -50%) scale(1); opacity:0.5; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity:0.7; } 100% { transform: translate(-50%, -50%) scale(1); opacity:0.5; }}
-@keyframes rotateRing { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); }}
-@keyframes iconBounce { 0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);} }
-@keyframes iconFloat { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-5px) scale(1.05);} }
-.donation-details { background:#f8f9fa; border-radius:12px; padding:20px; margin:20px 0; text-align:left; }
-.donation-details h3 { color:#2c3e50; margin-bottom:15px; font-size:18px; border-bottom:1px solid #e9ecef; padding-bottom:10px; }
-.detail-row { display:flex; justify-content:space-between; margin-bottom:10px; }
-.detail-label { color:#7f8c8d; font-weight:500; }
-.detail-value { color:#2c3e50; font-weight:600; }
-.flower { position:fixed; pointer-events:none; z-index:1001; font-size:24px; opacity:0.9; text-shadow:0 0 6px rgba(255,255,255,0.8),0 0 12px rgba(255,192,203,0.6); filter: drop-shadow(0 0 6px rgba(255,255,255,0.6)); }
-#flower-ground { position:fixed; bottom:0; left:0; width:100%; height:200px; pointer-events:none; z-index:1001; overflow:visible; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure Payment Form</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    * {box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;}
+    body {background: #f8f9fa; color: #212529; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; line-height: 1.6;}
+    .container {width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;}
+    .header {background: #2c3e50; color: white; padding: 24px 32px; display: flex; align-items: center;}
+    .logo {width: 48px; height: 48px; background: white; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-right: 16px;}
+    .logo i {font-size: 24px; color: #2c3e50;}
+    .header-content h1 {font-size: 24px; font-weight: 600; margin-bottom: 4px;}
+    .header-content p {opacity: 0.9; font-size: 14px;}
+    .payment-body {padding: 32px;}
+    .section-title {font-size: 18px; color: #2c3e50; margin: 28px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #e9ecef; display: flex; align-items: center; font-weight: 600;}
+    .section-title i {margin-right: 12px;}
+    .donation-amounts {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;}
+    .donation-amounts .donation-option {flex: 1 1 30%; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.3s ease; font-weight: 500;}
+    .donation-amounts .donation-option.active {background: #2c3e50; color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+    .other-amount-container {display: none; margin-top: 16px;}
+    .other-amount-container.visible {display: block;}
+    .currency-symbol {position: relative;}
+    .currency-symbol::before {content: "€"; position: absolute; left: 16px; top: 16px; color: #495057; font-weight: 500; z-index: 1;}
+    .currency-symbol input {padding-left: 38px;}
+    .form-group {margin-bottom: 24px;}
+    label {display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: #495057;}
+    input, select {width: 100%; padding: 16px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; transition: all 0.2s ease; color: #212529; background: white;}
+    input:focus, select:focus {outline: none; border-color: #2c3e50; box-shadow: 0 0 0 3px rgba(44,62,80,0.1);}
+    .form-row {display: flex; gap: 20px; margin-bottom: 20px;}
+    .form-row .form-group {flex: 1; margin-bottom: 0;}
+    .card-element-container {padding: 16px; border: 1px solid #ced4da; border-radius: 8px; background: white;}
+    .StripeElement--focus {box-shadow: 0 0 0 3px rgba(44,62,80,0.1); border-color: #2c3e50;}
+    .pay-button {background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 18px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; transition: all 0.3s ease; margin-top: 10px;}
+    .pay-button:hover {background: #1a252f;}
+    .pay-button:disabled {opacity: 0.7; cursor: not-allowed;}
+    .secure-notice {display: flex; align-items: center; justify-content: center; margin-top: 24px; color: #6c757d; font-size: 14px;}
+    .secure-notice i {margin-right: 8px; color: #28a745;}
+    .accepted-cards {margin-top: 28px; text-align: center;}
+    .accepted-cards p {font-size: 14px; color: #6c757d; margin-bottom: 12px;}
+    .card-icons {display: flex; justify-content: center; gap: 12px;}
+    .card-icons i {font-size: 32px; color: #495057;}
+    .payment-footer {background: #f8f9fa; padding: 20px 32px; text-align: center; border-top: 1px solid #e9ecef;}
+    .payment-footer p {font-size: 14px; color: #6c757d;}
+    #donation-by {font-style: italic;}
+    #donation-by::placeholder {font-style: italic; color: #6c757d;}
+    .card-errors {color: #dc3545; margin-top: 8px; font-size: 14px;}
+    
+    /* Success Modal Styles */
+    .modal-overlay { 
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center;
+      z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; 
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .success-modal {
+      background: white; border-radius: 20px; width: 90%; max-width: 500px; padding: 30px; text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative; z-index: 1002;
+    }
+    .success-modal h2 { animation: floatHeading 3s ease-in-out infinite; }
+    @keyframes floatHeading { 0%,100%{transform: translateY(0);} 50%{transform: translateY(-5px);} }
+    .success-modal p { animation: floatText 3s ease-in-out infinite; }
+    @keyframes floatText { 0%,100%{transform: translateY(0);} 50%{transform: translateY(-3px);} }
+    .modal-button {
+      background: linear-gradient(to right, #4CAF50, #2E8B57);
+      color: white; border: none; border-radius: 8px; padding: 12px 24px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      animation: pulseButton 2s ease-in-out infinite alternate;
+    }
+    @keyframes pulseButton { 0%{transform: scale(1);}50%{transform: scale(1.05);}100%{transform: scale(1);} }
+    .success-icon {
+      width: 120px; height: 120px;
+      background: radial-gradient(circle at 30% 30%, #4CAF50, #2E8B57);
+      border-radius: 50%; display: flex; justify-content: center; align-items: center;
+      margin: 0 auto 20px; position: relative; z-index: 1002;
+      box-shadow: 0 0 20px rgba(76,175,80,0.6), 0 0 40px rgba(76,175,80,0.3) inset;
+      animation: iconBounce 2s ease-in-out infinite alternate, iconFloat 3s ease-in-out infinite;
+    }
+    .success-icon i { font-size: 50px; color: white; z-index: 1; }
+    .success-icon::before {
+      content: '';
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(76,175,80,0.3), transparent 60%);
+      z-index: -1;
+      animation: haloPulse 2s ease-in-out infinite alternate;
+    }
+    .success-icon::after {
+      content: '';
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.3);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      z-index: -1;
+      animation: rotateRing 4s linear infinite;
+    }
+    @keyframes haloPulse {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+      50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    }
+    @keyframes rotateRing {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    @keyframes iconBounce { 0%{transform: scale(1);}50%{transform: scale(1.1);}100%{transform: scale(1);} }
+    @keyframes iconFloat { 0%,100%{transform: translateY(0) scale(1);} 50%{transform: translateY(-5px) scale(1.05);} }
+    .corner-decoration {
+      position: absolute; font-size: 80px; color: #4CAF50; opacity: 0.1; z-index: 1001;
+      animation: cornerTwinkle 3s ease-in-out infinite alternate;
+    }
+    @keyframes cornerTwinkle { 0%{opacity: 0.1; transform: scale(1);}50%{opacity: 0.15; transform: scale(1.05);}100%{opacity: 0.1; transform: scale(1);} }
+    .corner-top-left { top: 10px; left: 10px; }
+    .corner-top-right { top: 10px; right: 10px; }
+    .corner-bottom-left { bottom: 10px; left: 10px; }
+    .corner-bottom-right { bottom: 10px; right: 10px; }
+    .donation-details { background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; }
+    .donation-details h3 { color: #2c3e50; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #e9ecef; padding-bottom: 10px; }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .detail-label { color: #7f8c8d; font-weight: 500; }
+    .detail-value { color: #2c3e50; font-weight: 600; }
+    .flower { 
+      position: fixed; pointer-events: none; z-index: 1001; font-size: 24px; opacity: 0.9;
+      text-shadow: 0 0 6px rgba(255,255,255,0.8), 0 0 12px rgba(255,192,203,0.6);
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
+    }
+    #flower-ground { position: fixed; bottom: 0; left: 0; width: 100%; height: 200px; pointer-events: none; z-index: 1001; overflow: visible; }
+  </style>
 </head>
 <body>
 <div class="container">
   <form id="payment-form">  
-    <div class="header">
+    <div class="header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+      <div class="logo" style="display: none;"><i class="fas fa-lock" style="font-size: 36px;"></i></div>
       <div class="header-content">
         <h1>One-Time Donation</h1>
         <p>Make a single contribution to support our cause</p>
@@ -95,25 +160,27 @@ input:focus, select:focus {outline: none; border-color: #2c3e50; box-shadow: 0 0
         <div class="donation-option" data-value="500">€500</div>
         <div class="donation-option" data-value="other">Other</div>
       </div>
+
       <div class="other-amount-container" id="other-amount-container">
         <div class="form-group currency-symbol">
           <label for="custom-amount">Enter Custom Amount (€)</label>
           <input type="number" id="custom-amount" placeholder="Enter amount" min="1" step="0.01">
         </div>
       </div>
+
       <div class="form-group">
         <label for="donation-by">Make donation by the name of (Optional)</label>
         <input type="text" id="donation-by" placeholder="e.g., In memory of someone, company name, etc.">
       </div>
 
       <div class="section-title"><i class="fas fa-user"></i><span>Personal Information</span></div>
-      <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" placeholder="Legal name and family name" required></div>
+      <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" placeholder="Legal name and familly name" required></div>
       <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" placeholder="your.email@example.com" required></div>
       <div class="form-group"><label for="phone">Phone Number (Optional)</label><input type="tel" id="phone" placeholder="Phone number (with country code)"></div>
 
       <div class="section-title"><i class="fas fa-address-card"></i><span>Billing Address</span></div>
       <div class="form-group"><label for="line1">Street Address</label><input type="text" id="line1" placeholder="Av. Gustave Eiffel" required></div>
-      <div class="form-group"><label for="line2">Apt, Suite, Building (Optional)</label><input type="text" id="line2" placeholder="Building 12, Apartment 70"></div>
+      <div class="form-group"><label for="line2">Apt, Suite, Building (Optional)</label><input type="text" id="line2" placeholder="Building 12, Appertment 70"></div>
 
       <div class="form-row">
         <div class="form-group"><label for="city">City</label><input type="text" id="city" placeholder="Paris" required></div>
@@ -152,28 +219,36 @@ input:focus, select:focus {outline: none; border-color: #2c3e50; box-shadow: 0 0
         </div>
       </div>
     </div>
-
+    
     <div class="payment-footer">
-      <p>By making a one-time donation, you authorize a single secure payment to support our association. No further charges will occur unless you donate again.</p>
+      <p>By making a one-time donation, you authorize a single secure payment to support our association. No further charges will occur unless you donate again. </p>
       <p>© 2025 Govinda's. All rights reserved.</p>
     </div>
   </form>
 </div>
 
-<!-- Floral Success Modal -->
+<!-- Success Modal -->
 <div class="modal-overlay" id="success-modal">
   <div class="success-modal">
+    <div class="corner-decoration corner-top-left">❀</div>
+    <div class="corner-decoration corner-top-right">❀</div>
+    <div class="corner-decoration corner-bottom-left">❀</div>
+    <div class="corner-decoration corner-bottom-right">❀</div>
+
     <div class="success-icon"><i class="fas fa-check"></i></div>
+
     <h2>Payment Successful!</h2>
     <p>Thank you for your generous donation. Your support helps us make the world a more beautiful place.</p>
+
     <div class="donation-details">
       <h3>Donation Details</h3>
-      <div class="detail-row"><span class="detail-label">Amount:</span><span class="detail-value">€0.00</span></div>
-      <div class="detail-row"><span class="detail-label">Name:</span><span class="detail-value">N/A</span></div>
-      <div class="detail-row"><span class="detail-label">Email:</span><span class="detail-value">N/A</span></div>
-      <div class="detail-row"><span class="detail-label">Donation By:</span><span class="detail-value">N/A</span></div>
-      <div class="detail-row"><span class="detail-label">Transaction ID:</span><span class="detail-value">N/A</span></div>
+      <div class="detail-row"><span class="detail-label">Amount:</span><span class="detail-value" id="success-amount">€25.00</span></div>
+      <div class="detail-row"><span class="detail-label">Name:</span><span class="detail-value" id="success-name"></span></div>
+      <div class="detail-row"><span class="detail-label">Email:</span><span class="detail-value" id="success-email"></span></div>
+      <div class="detail-row"><span class="detail-label">Donation By:</span><span class="detail-value" id="success-donation-by"></span></div>
+      <div class="detail-row"><span class="detail-label">Transaction ID:</span><span class="detail-value" id="success-transaction-id"></span></div>
     </div>
+
     <button class="modal-button" id="modal-close-btn"><i class="fas fa-check-circle"></i> Continue</button>
   </div>
 </div>
@@ -181,60 +256,100 @@ input:focus, select:focus {outline: none; border-color: #2c3e50; box-shadow: 0 0
 <div id="flower-ground"></div>
 
 <script>
-// ----------------------- Stripe Setup -----------------------
+// Initialize Stripe
 const stripe = Stripe('pk_test_51S1OAH3pBglTeA0mBud6ByC3NIv6nMTrQ4ITBQ1h1GDTBX5ygMuoeCVeBZdF1Jy5wmQq819Xbd4kKRjZ3aJJcDfu00dGiF5MC6');
 const elements = stripe.elements();
-const card = elements.create('card', { style: { base: { fontSize: '16px', color: '#212529' } } });
+const style = {
+  base: {
+    color: '#212529',
+    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+    fontSmoothing: 'antialiased',
+    fontSize: '16px',
+    '::placeholder': { color: '#6c757d' }
+  },
+  invalid: { color: '#dc3545', iconColor: '#dc3545' }
+};
+
+// Create card element
+const card = elements.create('card', { style: style, hidePostalCode: true });
 card.mount('#card-element');
 
-const form = document.getElementById('payment-form');
-const cardErrors = document.getElementById('card-errors');
-const payButton = document.getElementById('submit-button');
-
-// ----------------------- Donation Amount UI -----------------------
-const donationOptions = document.querySelectorAll('.donation-option');
+// Handle form elements
+const donationOptions = document.querySelectorAll('.donation-amounts .donation-option');
 const otherAmountContainer = document.getElementById('other-amount-container');
 const customAmountInput = document.getElementById('custom-amount');
+const payButton = document.getElementById('submit-button');
+const form = document.getElementById('payment-form');
+const cardErrors = document.getElementById('card-errors');
 
+// Success modal elements
+const successModal = document.getElementById('success-modal');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const successAmount = document.getElementById('success-amount');
+const successName = document.getElementById('success-name');
+const successEmail = document.getElementById('success-email');
+const successDonationBy = document.getElementById('success-donation-by');
+const successTransactionId = document.getElementById('success-transaction-id');
+const ground = document.getElementById('flower-ground');
+
+// Floral animation variables
+const flowers = ['❀','✿','❁'];
+const colors = ['#FF9FF3','#FEA47F','#F97F51','#B33771','#6D214F','#82589F','#2C3A47','#4CAF50','#2E8B57','#ff6f61','#f7b32b','#6a89cc','#78e08f','#e55039'];
+const landedFlowers = [];
+const flowerSpacing = 20;
+
+// Handle donation amount selection
 donationOptions.forEach(option => {
-  option.addEventListener('click', () => {
-    donationOptions.forEach(o => o.classList.remove('active'));
-    option.classList.add('active');
-    if(option.dataset.value === 'other'){ otherAmountContainer.classList.add('visible'); customAmountInput.focus(); }
-    else{ otherAmountContainer.classList.remove('visible'); updateButtonText(); }
+  option.addEventListener('click', function() {
+    donationOptions.forEach(opt => opt.classList.remove('active'));
+    this.classList.add('active');
+    if (this.dataset.value === 'other') {
+      otherAmountContainer.classList.add('visible');
+      customAmountInput.focus();
+    } else {
+      otherAmountContainer.classList.remove('visible');
+    }
     updateButtonText();
   });
 });
 
+// Update button text when custom amount changes
 customAmountInput.addEventListener('input', updateButtonText);
 
+// Get the selected amount
 function getSelectedAmount() {
-  const active = document.querySelector('.donation-option.active');
-  if(active.dataset.value === 'other'){ return parseFloat(customAmountInput.value) || 0; }
-  return parseFloat(active.dataset.value);
-}
-
-function updateButtonText() { const amount = getSelectedAmount(); payButton.textContent = `Pay €${amount || 0}`; }
-updateButtonText();
-
-// ----------------------- Falling Flowers -----------------------
-function createFallingFlowers() {
-  const numFlowers = 25;
-  const container = document.getElementById('flower-ground');
-  for(let i=0;i<numFlowers;i++){
-    const flower = document.createElement('div'); flower.classList.add('flower');
-    flower.textContent = '🌸';
-    flower.style.left = Math.random()*window.innerWidth+'px';
-    flower.style.animation = `fall ${(Math.random()*5+5)}s linear ${Math.random()*5}s infinite`;
-    container.appendChild(flower);
+  const activeOption = document.querySelector('.donation-amounts .donation-option.active');
+  if (activeOption.dataset.value === 'other') {
+    return parseFloat(customAmountInput.value) || 0;
+  } else {
+    return parseFloat(activeOption.dataset.value);
   }
 }
 
-// ----------------------- Form Submission -----------------------
+// Update the pay button text
+function updateButtonText() {
+  const amount = getSelectedAmount();
+  if (amount > 0) {
+    payButton.textContent = `Pay €${amount}`;
+  } else if (document.querySelector('.donation-amounts .donation-option.active').dataset.value === 'other') {
+    payButton.textContent = 'Enter amount';
+  }
+}
+
+// Display card errors
+card.addEventListener('change', function(event) {
+  cardErrors.textContent = event.error ? event.error.message : '';
+});
+
+// Handle form submission
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+
   const amount = getSelectedAmount();
-  if(amount <= 0){ alert('Please enter a valid amount'); return; }
+  if (amount <= 0) {
+    alert('Please enter a valid amount');
+    return;
+  }
 
   cardErrors.textContent = '';
   payButton.disabled = true;
@@ -242,70 +357,166 @@ form.addEventListener('submit', async (event) => {
 
   try {
     const donationByName = document.getElementById('donation-by').value;
-    const response = await fetch('/.netlify/functions/process-payment',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ amount:Math.round(amount*100), currency:'eur', donation_by: donationByName }),
+    const response = await fetch('/.netlify/functions/process-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: Math.round(amount * 100), // cents
+        currency: 'eur',
+        donation_by: donationByName
+      }),
     });
-    const data = await response.json();
-    if(!response.ok) throw new Error(data.error||'Failed to create payment intent');
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret,{
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Failed to create payment intent');
+
+    const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
       payment_method: {
         card: card,
-        billing_details:{
+        billing_details: {
           name: document.getElementById('card-name').value,
           email: document.getElementById('email').value,
           phone: document.getElementById('phone').value,
-          address:{
+          address: {
             line1: document.getElementById('line1').value,
             line2: document.getElementById('line2').value,
             city: document.getElementById('city').value,
             state: document.getElementById('state').value,
             postal_code: document.getElementById('postal_code').value,
-            country: document.getElementById('country').value
+            country: document.getElementById('country').value,
           }
         }
       }
     });
 
-    if(error){
+    if (error) {
       cardErrors.textContent = error.message;
       payButton.disabled = false;
-      updateButtonText();
+      payButton.textContent = `Pay €${amount}`;
     } else {
-      // Populate and show modal
-      const successModal = document.getElementById('success-modal');
-      successModal.classList.add('active');
-      document.body.style.overflow='hidden';
-
-      const details = successModal.querySelectorAll('.detail-value');
-      details[0].textContent = `€${amount.toFixed(2)}`;
-      details[1].textContent = document.getElementById('name').value;
-      details[2].textContent = document.getElementById('email').value;
-      details[3].textContent = donationByName || 'N/A';
-      details[4].textContent = paymentIntent.id;
-
-      createFallingFlowers();
-
-      document.getElementById('modal-close-btn').onclick = () => {
-        successModal.classList.remove('active');
-        document.body.style.overflow='auto';
-        document.querySelectorAll('.flower').forEach(f=>f.remove());
-        form.reset();
-        donationOptions.forEach(opt=>opt.classList.remove('active'));
-        donationOptions[0].classList.add('active');
-        otherAmountContainer.classList.remove('visible');
-        updateButtonText();
-      };
+      // Show success modal with details
+      showSuccessModal(amount, paymentIntent.id, donationByName);
     }
-  } catch(err){
-    console.error(err);
+  } catch (err) {
+    console.error('Error:', err);
     cardErrors.textContent = err.message;
     payButton.disabled = false;
     updateButtonText();
   }
 });
+
+// Show success modal with details
+function showSuccessModal(amount, transactionId, donationByName) {
+  // Populate modal with data
+  successAmount.textContent = `€${amount.toFixed(2)}`;
+  successName.textContent = document.getElementById('name').value;
+  successEmail.textContent = document.getElementById('email').value;
+  successDonationBy.textContent = donationByName || 'Not specified';
+  successTransactionId.textContent = transactionId.substring(0, 13).toUpperCase();
+  
+  // Show the modal
+  successModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  
+  // Start floral animation
+  createFallingFlowers();
+}
+
+// Close modal handler
+modalCloseBtn.addEventListener('click', closeModal);
+successModal.addEventListener('click', e => { 
+  if(e.target === successModal) closeModal(); 
+});
+
+function closeModal() {
+  successModal.classList.remove('active');
+  document.body.style.overflow = 'auto';
+  document.querySelectorAll('.flower').forEach(f => f.remove());
+  ground.innerHTML = '';
+  
+  // Reset form
+  form.reset();
+  donationOptions.forEach(opt => opt.classList.remove('active'));
+  donationOptions[0].classList.add('active');
+  otherAmountContainer.classList.remove('visible');
+  updateButtonText();
+}
+
+// Floral animation functions
+function createFallingFlowers() {
+  const flowerNumber = 100;
+  for(let i = 0; i < flowerNumber; i++) {
+    setTimeout(createFlower, i * 100);
+  }
+}
+
+function createFlower() {
+  const flower = document.createElement('div');
+  flower.className = 'flower';
+  flower.innerHTML = flowers[Math.floor(Math.random() * flowers.length)];
+  flower.style.position = 'absolute';
+  flower.style.left = Math.random() * window.innerWidth + 'px';
+  flower.style.top = '-50px';
+  flower.style.color = colors[Math.floor(Math.random() * colors.length)];
+  flower.style.fontSize = (Math.random() * 20 + 16) + 'px';
+  flower.style.opacity = Math.random() * 0.8 + 0.4;
+  document.body.appendChild(flower);
+
+  const duration = Math.random() * 2 + 2;
+  const driftX = (Math.random() - 0.5) * 100;
+  const rotation = (Math.random() > 0.5 ? 360 : -360) * Math.random();
+  const finalScale = Math.random() * 0.8 + 0.6;
+
+  const startLeft = parseFloat(flower.style.left);
+  const startTop = parseFloat(flower.style.top);
+  const bottomLimit = window.innerHeight - 50;
+  const startTime = performance.now();
+
+  function animate(time) {
+    const elapsed = (time - startTime) / 1000;
+    const progress = Math.min(elapsed / duration, 1);
+    flower.style.top = startTop + progress * bottomLimit + 'px';
+    flower.style.left = startLeft + progress * driftX + 'px';
+    flower.style.transform = `rotate(${rotation * progress}deg) scale(${finalScale})`;
+    if (progress < 1) requestAnimationFrame(animate);
+    else {
+      const rect = flower.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      let landingY = rect.bottom;
+      landedFlowers.forEach(f => {
+        const fRect = f.getBoundingClientRect();
+        const distX = Math.abs(fRect.left + fRect.width/2 - centerX);
+        if (distX < flowerSpacing) landingY = Math.min(landingY, fRect.top - rect.height * 0.3);
+      });
+      let finalX = parseFloat(flower.style.left);
+      landedFlowers.forEach(f => {
+        const fRect = f.getBoundingClientRect();
+        if (Math.abs(fRect.left - finalX) < flowerSpacing) finalX += (Math.random() > 0.5 ? 1 : -1) * flowerSpacing;
+      });
+      const startFinalX = parseFloat(flower.style.left);
+      const startFinalY = parseFloat(flower.style.top);
+      const slideDuration = 500 + Math.random()*500;
+      const slideStart = performance.now();
+      function slide(time) {
+        const t = Math.min((time - slideStart) / slideDuration, 1);
+        flower.style.left = startFinalX + (finalX - startFinalX) * t + 'px';
+        flower.style.top = startFinalY + (landingY - startFinalY) * t + 'px';
+        if (t < 1) requestAnimationFrame(slide);
+        else {
+          flower.style.left = finalX + 'px';
+          flower.style.top = landingY + 'px';
+          flower.style.transform = 'none';
+          landedFlowers.push(flower);
+        }
+      }
+      requestAnimationFrame(slide);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// Initialize button text
+updateButtonText();
 </script>
 </body>
 </html>
