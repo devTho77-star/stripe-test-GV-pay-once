@@ -8,8 +8,8 @@
   <script src="https://js.stripe.com/v3/"></script>
   <style>
     * {box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;}
-    body {background: #f8f9fa; color: #212529; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; line-height: 1.6; position: relative; overflow-x: hidden;}
-    .container {width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; z-index: 10; position: relative;}
+    body {background: #f8f9fa; color: #212529; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; line-height: 1.6;}
+    .container {width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;}
     .header {background: #2c3e50; color: white; padding: 24px 32px; display: flex; align-items: center;}
     .logo {width: 48px; height: 48px; background: white; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-right: 16px;}
     .logo i {font-size: 24px; color: #2c3e50;}
@@ -48,95 +48,6 @@
     #donation-by {font-style: italic;}
     #donation-by::placeholder {font-style: italic; color: #6c757d;}
     .card-errors {color: #dc3545; margin-top: 8px; font-size: 14px;}
-    
-    /* Success Modal Styles */
-    .modal-overlay { 
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center;
-      z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; 
-    }
-    .modal-overlay.active { opacity: 1; visibility: visible; }
-    .success-modal {
-      background: white; border-radius: 20px; width: 90%; max-width: 500px; padding: 30px; text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative; z-index: 1002;
-    }
-    .success-modal h2 { animation: floatHeading 3s ease-in-out infinite; }
-    @keyframes floatHeading { 0%,100%{transform: translateY(0);} 50%{transform: translateY(-5px);} }
-    .success-modal p { animation: floatText 3s ease-in-out infinite; }
-    @keyframes floatText { 0%,100%{transform: translateY(0);} 50%{transform: translateY(-3px);} }
-    .modal-button {
-      background: linear-gradient(to right, #4CAF50, #2E8B57);
-      color: white; border: none; border-radius: 8px; padding: 12px 24px;
-      font-size: 16px; font-weight: 600; cursor: pointer;
-      animation: pulseButton 2s ease-in-out infinite alternate;
-    }
-    @keyframes pulseButton { 0%{transform: scale(1);}50%{transform: scale(1.05);}100%{transform: scale(1);} }
-    .success-icon {
-      width: 120px; height: 120px;
-      background: radial-gradient(circle at 30% 30%, #4CAF50, #2E8B57);
-      border-radius: 50%; display: flex; justify-content: center; align-items: center;
-      margin: 0 auto 20px; position: relative; z-index: 1002;
-      box-shadow: 0 0 20px rgba(76,175,80,0.6), 0 0 40px rgba(76,175,80,0.3) inset;
-      animation: iconBounce 2s ease-in-out infinite alternate, iconFloat 3s ease-in-out infinite;
-    }
-    .success-icon i { font-size: 50px; color: white; z-index: 1; }
-    .success-icon::before {
-      content: '';
-      position: absolute;
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(76,175,80,0.3), transparent 60%);
-      z-index: -1;
-      animation: haloPulse 2s ease-in-out infinite alternate;
-    }
-    .success-icon::after {
-      content: '';
-      position: absolute;
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.3);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(0deg);
-      z-index: -1;
-      animation: rotateRing 4s linear infinite;
-    }
-    @keyframes haloPulse {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-      50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-    }
-    @keyframes rotateRing {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-    @keyframes iconBounce { 0%{transform: scale(1);}50%{transform: scale(1.1);}100%{transform: scale(1);} }
-    @keyframes iconFloat { 0%,100%{transform: translateY(0) scale(1);} 50%{transform: translateY(-5px) scale(1.05);} }
-    .corner-decoration {
-      position: absolute; font-size: 80px; color: #4CAF50; opacity: 0.1; z-index: 1001;
-      animation: cornerTwinkle 3s ease-in-out infinite alternate;
-    }
-    @keyframes cornerTwinkle { 0%{opacity: 0.1; transform: scale(1);}50%{opacity: 0.15; transform: scale(1.05);}100%{opacity: 0.1; transform: scale(1);} }
-    .corner-top-left { top: 10px; left: 10px; }
-    .corner-top-right { top: 10px; right: 10px; }
-    .corner-bottom-left { bottom: 10px; left: 10px; }
-    .corner-bottom-right { bottom: 10px; right: 10px; }
-    .donation-details { background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; }
-    .donation-details h3 { color: #2c3e50; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #e9ecef; padding-bottom: 10px; }
-    .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-    .detail-label { color: #7f8c8d; font-weight: 500; }
-    .detail-value { color: #2c3e50; font-weight: 600; }
-    .flower { 
-      position: fixed; pointer-events: none; z-index: 1001; font-size: 24px; opacity: 0.9;
-      text-shadow: 0 0 6px rgba(255,255,255,0.8), 0 0 12px rgba(255,192,203,0.6);
-      filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
-    }
-    #flower-ground { position: fixed; bottom: 0; left: 0; width: 100%; height: 200px; pointer-events: none; z-index: 1001; overflow: visible; }
   </style>
 </head>
 <body>
@@ -227,34 +138,6 @@
   </form>
 </div>
 
-<!-- Success Modal -->
-<div class="modal-overlay" id="success-modal">
-  <div class="success-modal">
-    <div class="corner-decoration corner-top-left">❀</div>
-    <div class="corner-decoration corner-top-right">❀</div>
-    <div class="corner-decoration corner-bottom-left">❀</div>
-    <div class="corner-decoration corner-bottom-right">❀</div>
-
-    <div class="success-icon"><i class="fas fa-check"></i></div>
-
-    <h2>Payment Successful!</h2>
-    <p>Thank you for your generous donation. Your support helps us make the world a more beautiful place.</p>
-
-    <div class="donation-details">
-      <h3>Donation Details</h3>
-      <div class="detail-row"><span class="detail-label">Amount:</span><span class="detail-value" id="success-amount">€25.00</span></div>
-      <div class="detail-row"><span class="detail-label">Name:</span><span class="detail-value" id="success-name"></span></div>
-      <div class="detail-row"><span class="detail-label">Email:</span><span class="detail-value" id="success-email"></span></div>
-      <div class="detail-row"><span class="detail-label">Donation By:</span><span class="detail-value" id="success-donation-by"></span></div>
-      <div class="detail-row"><span class="detail-label">Transaction ID:</span><span class="detail-value" id="success-transaction-id"></span></div>
-    </div>
-
-    <button class="modal-button" id="modal-close-btn"><i class="fas fa-check-circle"></i> Continue</button>
-  </div>
-</div>
-
-<div id="flower-ground"></div>
-
 <script>
 // Initialize Stripe
 const stripe = Stripe('pk_test_51S1OAH3pBglTeA0mBud6ByC3NIv6nMTrQ4ITBQ1h1GDTBX5ygMuoeCVeBZdF1Jy5wmQq819Xbd4kKRjZ3aJJcDfu00dGiF5MC6');
@@ -281,22 +164,6 @@ const customAmountInput = document.getElementById('custom-amount');
 const payButton = document.getElementById('submit-button');
 const form = document.getElementById('payment-form');
 const cardErrors = document.getElementById('card-errors');
-
-// Success modal elements
-const successModal = document.getElementById('success-modal');
-const modalCloseBtn = document.getElementById('modal-close-btn');
-const successAmount = document.getElementById('success-amount');
-const successName = document.getElementById('success-name');
-const successEmail = document.getElementById('success-email');
-const successDonationBy = document.getElementById('success-donation-by');
-const successTransactionId = document.getElementById('success-transaction-id');
-const ground = document.getElementById('flower-ground');
-
-// Floral animation variables
-const flowers = ['❀','✿','❁'];
-const colors = ['#FF9FF3','#FEA47F','#F97F51','#B33771','#6D214F','#82589F','#2C3A47','#4CAF50','#2E8B57','#ff6f61','#f7b32b','#6a89cc','#78e08f','#e55039'];
-const landedFlowers = [];
-const flowerSpacing = 20;
 
 // Handle donation amount selection
 donationOptions.forEach(option => {
@@ -394,8 +261,20 @@ form.addEventListener('submit', async (event) => {
       payButton.disabled = false;
       payButton.textContent = `Pay €${amount}`;
     } else {
-      // Show success modal with details
-      showSuccessModal(amount, paymentIntent.id, donationByName);
+      // Store payment details for the success page
+      const paymentDetails = {
+        amount: amount,
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        donationBy: donationByName || 'Not specified',
+        transactionId: paymentIntent.id.substring(0, 13).toUpperCase()
+      };
+      
+      // Store in sessionStorage to pass to the success page
+      sessionStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
+      
+      // Redirect to success page
+      window.location.href = 'success_confirmation.html';
     }
   } catch (err) {
     console.error('Error:', err);
@@ -404,116 +283,6 @@ form.addEventListener('submit', async (event) => {
     updateButtonText();
   }
 });
-
-// Show success modal with details
-function showSuccessModal(amount, transactionId, donationByName) {
-  // Populate modal with data
-  successAmount.textContent = `€${amount.toFixed(2)}`;
-  successName.textContent = document.getElementById('name').value;
-  successEmail.textContent = document.getElementById('email').value;
-  successDonationBy.textContent = donationByName || 'Not specified';
-  successTransactionId.textContent = transactionId.substring(0, 13).toUpperCase();
-  
-  // Show the modal
-  successModal.classList.add('active');
-  document.body.style.overflow = 'hidden';
-  
-  // Start floral animation
-  createFallingFlowers();
-}
-
-// Close modal handler
-modalCloseBtn.addEventListener('click', closeModal);
-successModal.addEventListener('click', e => { 
-  if(e.target === successModal) closeModal(); 
-});
-
-function closeModal() {
-  successModal.classList.remove('active');
-  document.body.style.overflow = 'auto';
-  document.querySelectorAll('.flower').forEach(f => f.remove());
-  ground.innerHTML = '';
-  
-  // Reset form
-  form.reset();
-  donationOptions.forEach(opt => opt.classList.remove('active'));
-  donationOptions[0].classList.add('active');
-  otherAmountContainer.classList.remove('visible');
-  updateButtonText();
-}
-
-// Floral animation functions
-function createFallingFlowers() {
-  const flowerNumber = 100;
-  for(let i = 0; i < flowerNumber; i++) {
-    setTimeout(createFlower, i * 100);
-  }
-}
-
-function createFlower() {
-  const flower = document.createElement('div');
-  flower.className = 'flower';
-  flower.innerHTML = flowers[Math.floor(Math.random() * flowers.length)];
-  flower.style.position = 'absolute';
-  flower.style.left = Math.random() * window.innerWidth + 'px';
-  flower.style.top = '-50px';
-  flower.style.color = colors[Math.floor(Math.random() * colors.length)];
-  flower.style.fontSize = (Math.random() * 20 + 16) + 'px';
-  flower.style.opacity = Math.random() * 0.8 + 0.4;
-  document.body.appendChild(flower);
-
-  const duration = Math.random() * 2 + 2;
-  const driftX = (Math.random() - 0.5) * 100;
-  const rotation = (Math.random() > 0.5 ? 360 : -360) * Math.random();
-  const finalScale = Math.random() * 0.8 + 0.6;
-
-  const startLeft = parseFloat(flower.style.left);
-  const startTop = parseFloat(flower.style.top);
-  const bottomLimit = window.innerHeight - 50;
-  const startTime = performance.now();
-
-  function animate(time) {
-    const elapsed = (time - startTime) / 1000;
-    const progress = Math.min(elapsed / duration, 1);
-    flower.style.top = startTop + progress * bottomLimit + 'px';
-    flower.style.left = startLeft + progress * driftX + 'px';
-    flower.style.transform = `rotate(${rotation * progress}deg) scale(${finalScale})`;
-    if (progress < 1) requestAnimationFrame(animate);
-    else {
-      const rect = flower.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      let landingY = rect.bottom;
-      landedFlowers.forEach(f => {
-        const fRect = f.getBoundingClientRect();
-        const distX = Math.abs(fRect.left + fRect.width/2 - centerX);
-        if (distX < flowerSpacing) landingY = Math.min(landingY, fRect.top - rect.height * 0.3);
-      });
-      let finalX = parseFloat(flower.style.left);
-      landedFlowers.forEach(f => {
-        const fRect = f.getBoundingClientRect();
-        if (Math.abs(fRect.left - finalX) < flowerSpacing) finalX += (Math.random() > 0.5 ? 1 : -1) * flowerSpacing;
-      });
-      const startFinalX = parseFloat(flower.style.left);
-      const startFinalY = parseFloat(flower.style.top);
-      const slideDuration = 500 + Math.random()*500;
-      const slideStart = performance.now();
-      function slide(time) {
-        const t = Math.min((time - slideStart) / slideDuration, 1);
-        flower.style.left = startFinalX + (finalX - startFinalX) * t + 'px';
-        flower.style.top = startFinalY + (landingY - startFinalY) * t + 'px';
-        if (t < 1) requestAnimationFrame(slide);
-        else {
-          flower.style.left = finalX + 'px';
-          flower.style.top = landingY + 'px';
-          flower.style.transform = 'none';
-          landedFlowers.push(flower);
-        }
-      }
-      requestAnimationFrame(slide);
-    }
-  }
-  requestAnimationFrame(animate);
-}
 
 // Initialize button text
 updateButtonText();
